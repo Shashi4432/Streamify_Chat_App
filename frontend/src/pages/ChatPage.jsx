@@ -33,7 +33,7 @@ const ChatPage = () => {
   const { data: tokenData } = useQuery({
     queryKey: ["streamToken"],
     queryFn: getStreamToken,
-    enabled: !!authUser,
+    enabled: !!authUser, // this will run only when authUser is available
   });
 
   useEffect(() => {
@@ -41,6 +41,8 @@ const ChatPage = () => {
       if (!tokenData?.token || !authUser) return;
 
       try {
+        console.log("Initializing stream chat client...");
+
         const client = StreamChat.getInstance(STREAM_API_KEY);
 
         await client.connectUser(
@@ -52,7 +54,12 @@ const ChatPage = () => {
           tokenData.token
         );
 
+        //
         const channelId = [authUser._id, targetUserId].sort().join("-");
+
+        // you and me
+        // if i start the chat => channelId: [myId, yourId]
+        // if you start the chat => channelId: [yourId, myId]  => [myId,yourId]
 
         const currChannel = client.channel("messaging", channelId, {
           members: [authUser._id, targetUserId],
@@ -63,7 +70,7 @@ const ChatPage = () => {
         setChatClient(client);
         setChannel(currChannel);
       } catch (error) {
-        console.error("Chat init error:", error);
+        console.error("Error initializing chat:", error);
         toast.error("Could not connect to chat. Please try again.");
       } finally {
         setLoading(false);
@@ -74,48 +81,35 @@ const ChatPage = () => {
   }, [tokenData, authUser, targetUserId]);
 
   const handleVideoCall = () => {
-    if (!channel) return;
+    if (channel) {
+      const callUrl = `${window.location.origin}/call/${channel.id}`;
 
-    const callUrl = `${window.location.origin}/call/${channel.id}`;
+      channel.sendMessage({
+        text: `I've started a video call. Join me here: ${callUrl}`,
+      });
 
-    channel.sendMessage({
-      text: `I've started a video call. Join me here: ${callUrl}`,
-    });
-
-    toast.success("Video call link sent successfully!");
+      toast.success("Video call link sent successfully!");
+    }
   };
 
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    <div className="h-[100svh] md:h-[93vh] w-full overflow-hidden">
+    <div className="h-[93vh]">
       <Chat client={chatClient}>
         <Channel channel={channel}>
-          <div className="relative h-full w-full flex">
-            {/* Call Button */}
+          <div className="w-full relative">
             <CallButton handleVideoCall={handleVideoCall} />
-
-            {/* Main Chat Window */}
             <Window>
-              <div className="flex flex-col h-full">
-                <ChannelHeader />
-
-                {/* Message list scrolls properly on mobile */}
-                <div className="flex-1 overflow-y-auto">
-                  <MessageList />
-                </div>
-
-                <MessageInput focus />
-              </div>
+              <ChannelHeader />
+              <MessageList />
+              <MessageInput focus />
             </Window>
-
-            {/* Thread (Stream handles mobile overlay automatically) */}
-            <Thread />
           </div>
+          <Thread />
         </Channel>
       </Chat>
     </div>
   );
 };
-
 export default ChatPage;
