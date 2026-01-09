@@ -6,12 +6,15 @@ function CallButton({ handleVideoCall }) {
       onClick={handleVideoCall}
       className="
         fixed z-50
-        bottom-24 right-4
-        md:top-4 md:bottom-auto
-        btn btn-success btn-sm text-white
+        bottom-28 right-4
+        bg-emerald-500 text-white
+        p-3 rounded-full
+        shadow-md
+        active:scale-95
       "
+      aria-label="Start video call"
     >
-      <VideoIcon className="size-6" />
+      <VideoIcon className="h-5 w-5" />
     </button>
   );
 }
