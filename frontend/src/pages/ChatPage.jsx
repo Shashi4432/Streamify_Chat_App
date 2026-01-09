@@ -63,8 +63,8 @@ const ChatPage = () => {
         setChatClient(client);
         setChannel(currChannel);
       } catch (error) {
-        console.error("Error initializing chat:", error);
-        toast.error("Could not connect to chat. Please try again.");
+        console.error("Chat init failed:", error);
+        toast.error("Could not connect to chat.");
       } finally {
         setLoading(false);
       }
@@ -74,36 +74,35 @@ const ChatPage = () => {
   }, [tokenData, authUser, targetUserId]);
 
   const handleVideoCall = () => {
-    if (channel) {
-      const callUrl = `${window.location.origin}/call/${channel.id}`;
+    if (!channel) return;
 
-      channel.sendMessage({
-        text: `I've started a video call. Join me here: ${callUrl}`,
-      });
+    const callUrl = `${window.location.origin}/call/${channel.id}`;
 
-      toast.success("Video call link sent successfully!");
-    }
+    channel.sendMessage({
+      text: `I've started a video call. Join me here: ${callUrl}`,
+    });
+
+    toast.success("Video call link sent!");
   };
 
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    <div className="h-[100svh] md:h-[93vh] w-full overflow-hidden">
+    /* ✅ Correct mobile height */
+    <div className="h-[100dvh] w-full">
       <Chat client={chatClient}>
         <Channel channel={channel}>
-          <div className="w-full h-full relative flex flex-col">
+          {/* ❌ no overflow-hidden here */}
+          <div className="relative h-full w-full">
+
+            {/* ✅ Visible on mobile & desktop */}
             <CallButton handleVideoCall={handleVideoCall} />
 
+            {/* ✅ Let Stream control layout */}
             <Window>
-              <div className="flex flex-col h-full">
-                <ChannelHeader />
-
-                <div className="flex-1 overflow-y-auto">
-                  <MessageList />
-                </div>
-
-                <MessageInput focus />
-              </div>
+              <ChannelHeader />
+              <MessageList />
+              <MessageInput focus />
             </Window>
 
             <Thread />
