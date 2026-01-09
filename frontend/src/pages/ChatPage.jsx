@@ -33,7 +33,7 @@ const ChatPage = () => {
   const { data: tokenData } = useQuery({
     queryKey: ["streamToken"],
     queryFn: getStreamToken,
-    enabled: !!authUser, // this will run only when authUser is available
+    enabled: !!authUser,
   });
 
   useEffect(() => {
@@ -41,8 +41,6 @@ const ChatPage = () => {
       if (!tokenData?.token || !authUser) return;
 
       try {
-        console.log("Initializing stream chat client...");
-
         const client = StreamChat.getInstance(STREAM_API_KEY);
 
         await client.connectUser(
@@ -54,12 +52,7 @@ const ChatPage = () => {
           tokenData.token
         );
 
-        //
         const channelId = [authUser._id, targetUserId].sort().join("-");
-
-        // you and me
-        // if i start the chat => channelId: [myId, yourId]
-        // if you start the chat => channelId: [yourId, myId]  => [myId,yourId]
 
         const currChannel = client.channel("messaging", channelId, {
           members: [authUser._id, targetUserId],
@@ -95,21 +88,30 @@ const ChatPage = () => {
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    <div className="h-[93vh]">
+    <div className="h-[100svh] md:h-[93vh] w-full overflow-hidden">
       <Chat client={chatClient}>
         <Channel channel={channel}>
-          <div className="w-full relative">
+          <div className="w-full h-full relative flex flex-col">
             <CallButton handleVideoCall={handleVideoCall} />
+
             <Window>
-              <ChannelHeader />
-              <MessageList />
-              <MessageInput focus />
+              <div className="flex flex-col h-full">
+                <ChannelHeader />
+
+                <div className="flex-1 overflow-y-auto">
+                  <MessageList />
+                </div>
+
+                <MessageInput focus />
+              </div>
             </Window>
+
+            <Thread />
           </div>
-          <Thread />
         </Channel>
       </Chat>
     </div>
   );
 };
+
 export default ChatPage;
