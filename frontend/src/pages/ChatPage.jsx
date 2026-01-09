@@ -88,29 +88,26 @@ const ChatPage = () => {
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    /* ✅ Correct mobile height */
-    <div className="h-[100dvh] w-full">
-      <Chat client={chatClient}>
-        <Channel channel={channel}>
-          {/* ❌ no overflow-hidden here */}
-          <div className="relative h-full w-full">
+  <div className="h-screen w-full">
+    <Chat client={chatClient}>
+      <Channel channel={channel}>
+        <div className="relative h-full w-full">
 
-            {/* ✅ Visible on mobile & desktop */}
-            <CallButton handleVideoCall={handleVideoCall} />
+          <CallButton handleVideoCall={handleVideoCall} />
 
-            {/* ✅ Let Stream control layout */}
-            <Window>
-              <ChannelHeader />
-              <MessageList />
-              <MessageInput focus />
-            </Window>
+          <Window>
+            <ChannelHeader />
+            <MessageList />
+            <MessageInput focus />
+          </Window>
 
-            <Thread />
-          </div>
-        </Channel>
-      </Chat>
-    </div>
-  );
+          <Thread />
+        </div>
+      </Channel>
+    </Chat>
+  </div>
+);
+
 };
 
 export default ChatPage;
